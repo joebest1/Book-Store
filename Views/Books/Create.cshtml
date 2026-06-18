@@ -1,0 +1,80 @@
+﻿@model BookStore.Models.MyBookModel
+
+<h2 class="mb-4 text-primary brand-font animate__animated animate__fadeInDown">Add a New Book</h2>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" class="animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label fw-semibold text-secondary"></label>
+        <input asp-for="Title" class="form-control shadow-sm border-0 rounded-3" placeholder="Enter book title" />
+        <span asp-validation-for="Title" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Author" class="form-label fw-semibold text-secondary"></label>
+        <input asp-for="Author" class="form-control shadow-sm border-0 rounded-3" placeholder="Enter author name" />
+        <span asp-validation-for="Author" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Category" class="form-label fw-semibold text-secondary"></label>
+        <input asp-for="Category" class="form-control shadow-sm border-0 rounded-3" placeholder="Enter category" />
+        <span asp-validation-for="Category" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Price" class="form-label fw-semibold text-secondary"></label>
+        <input asp-for="Price" type="number" step="0.01" min="0" class="form-control shadow-sm border-0 rounded-3" placeholder="Enter price in USD" />
+        <span asp-validation-for="Price" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PublishedDate" class="form-label fw-semibold text-secondary"></label>
+        <input asp-for="PublishedDate" type="date" class="form-control shadow-sm border-0 rounded-3" />
+        <span asp-validation-for="PublishedDate" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-4">
+        <label class="form-label fw-semibold text-secondary">Book Image</label>
+        <input type="file" name="BookImage" class="form-control shadow-sm border-0 rounded-3" />
+    </div>
+
+    <button type="submit" class="btn btn-primary fw-bold px-5 py-2 rounded-pill shadow animate__animated animate__pulse animate__infinite animate__slow">
+        <i class="fas fa-save me-2"></i> Save
+    </button>
+</form>
+
+<style>
+    /* Custom colors */
+    .text-primary {
+        color: #3a86ff !important;
+    }
+
+    .text-secondary {
+        color: #6c757d !important;
+    }
+
+    /* Input focus effect */
+    input.form-control:focus {
+        box-shadow: 0 0 8px rgba(58, 134, 255, 0.6);
+        border-color: #3a86ff;
+        outline: none;
+        transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Button hover effect */
+    .btn-primary:hover, .btn-primary:focus {
+        background: #2a5eb8 !important;
+        box-shadow: 0 6px 15px rgba(42, 94, 184, 0.6);
+        transform: translateY(-3px);
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    /* Form container animation delay */
+    form.animate__fadeInUp {
+        animation-fill-mode: both;
+    }
+</style>
+
+<!-- Animate.css CDN for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />

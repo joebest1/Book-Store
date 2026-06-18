@@ -1,0 +1,291 @@
+﻿@model IEnumerable<BookStore.Models.MyBookModel>
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var currentSort = ViewBag.CurrentSort as string ?? "";
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
+    var cartCount = ViewBag.CartCount as int? ?? 0;
+}
+
+<!-- Header Section -->
+<div class="header-section bg-gradient-primary text-center py-4 mb-5 rounded-bottom shadow-lg animate__animated animate__fadeInDown">
+    <h1 class="display-5 fw-bold text-white mb-2">
+        <i class="fas fa-book-open me-2"></i>Book Heaven
+        
+    </h1>
+    <p class="lead text-light">Discover your next favorite read</p>
+</div>
+
+<div class="container">
+    <!-- Search + Sort Form -->
+    <div class="search-section card border-0 shadow-sm mb-4 animate__animated animate__fadeIn">
+        <div class="card-body p-4">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-primary"></i></span>
+                        <input type="text" name="search" value="@currentSearch"
+                               placeholder="Search by title, author, or category..."
+                               class="form-control border-0 shadow-none bg-light" />
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="sortBy" class="form-select shadow-none bg-light border-0">
+                        <option value="" selected="@(currentSort == "" ? "selected" : null)">Sort by</option>
+                        <option value="price_asc" selected="@(currentSort == "price_asc" ? "selected" : null)">Price: Low to High</option>
+                        <option value="price_desc" selected="@(currentSort == "price_desc" ? "selected" : null)">Price: High to Low</option>
+                        <option value="date_asc" selected="@(currentSort == "date_asc" ? "selected" : null)">Published: Oldest First</option>
+                        <option value="date_desc" selected="@(currentSort == "date_desc" ? "selected" : null)">Published: Newest First</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+                        <i class="fas fa-filter me-2"></i>Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Controls & Cart Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 animate__animated animate__fadeIn">
+        <!-- Add Book button for Admin -->
+        @if (HttpContextAccessor.HttpContext?.Session != null &&
+            string.Equals(HttpContextAccessor.HttpContext.Session.GetString("UserRole"), "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            <a asp-action="Create" class="btn btn-success shadow-sm fw-bold px-4 py-2 rounded-pill">
+                <i class="fas fa-plus-circle me-2"></i>Add New Book
+            </a>
+        }
+        else
+        {
+            <div></div> <!-- Empty div for spacing -->
+        }
+
+        <!-- Cart Count Badge -->
+        @if (cartCount > 0)
+        {
+            <a asp-controller="Cart" asp-action="Index" class="btn btn-warning position-relative rounded-pill px-4 py-2 shadow-sm fw-bold">
+                <i class="fas fa-shopping-cart me-2"></i>My Cart
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow">
+                    @cartCount
+                </span>
+            </a>
+        }
+    </div>
+
+    <!-- Books Grid -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            @foreach (var book in Model)
+            {
+                <div class="col mb-4">
+                    <div class="card h-100 border-0 shadow book-card animate__animated animate__zoomIn">
+                        @{
+                            var imagePath = !string.IsNullOrEmpty(book.ImageFileName)
+                            ? Url.Content("~/images/books/" + book.ImageFileName)
+                            : Url.Content("~/images/books/default.png");
+                        }
+                        <div class="book-image-container">
+                            <img src="@imagePath" class="card-img-top"
+                                 alt="@book.Title" />
+                            <div class="book-overlay"></div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-dark mb-2">@book.Title</h5>
+                            <p class="card-text text-muted mb-2"><i class="fas fa-user-edit me-2 text-primary"></i>@book.Author</p>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="badge bg-info text-dark"><i class="fas fa-tag me-1"></i>@book.Category</span>
+                                <span class="fw-bold text-success">$@book.Price.ToString("F2")</span>
+                            </div>
+                            <p class="card-text small text-muted"><i class="far fa-calendar-alt me-2 text-primary"></i>Published: @book.PublishedDate.ToShortDateString()</p>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent border-0 pb-3">
+                            <form method="post" asp-controller="Cart" asp-action="AddToCart">
+                                <input type="hidden" name="BookId" value="@book.Id" />
+                                <input type="hidden" name="Quantity" value="1" />
+                                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-pill">
+                                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 my-5 animate__animated animate__fadeIn">
+            <i class="fas fa-book-open fa-4x text-muted mb-4"></i>
+            <h3 class="text-muted">No books found</h3>
+            <p class="text-muted">Try adjusting your search or filters</p>
+        </div>
+    }
+</div>
+
+<!-- Custom CSS -->
+<style>
+    /* Primary Gradient Background */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%) !important;
+}
+
+/* Card Styling */
+.book-card {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(78, 84, 200, 0.2);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    background: linear-gradient(145deg, #ffffff, #f0f4ff);
+}
+
+.book-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(78, 84, 200, 0.4);
+}
+
+/* Book Image Container */
+.book-image-container {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    border-bottom: 1px solid #e0e7ff;
+    border-radius: 16px 16px 0 0;
+}
+
+.book-image-container img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.book-card:hover .book-image-container img {
+    transform: scale(1.15) rotate(1deg);
+}
+
+/* Overlay */
+.book-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(78, 84, 200, 0.7) 0%, rgba(78, 84, 200, 0) 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 16px 16px 0 0;
+}
+
+.book-card:hover .book-overlay {
+    opacity: 1;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #3b40a4 0%, #6b70d9 100%);
+    box-shadow: 0 6px 20px rgba(59, 64, 164, 0.5);
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Success Button */
+.btn-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border: none;
+    box-shadow: 0 4px 15px rgba(18, 152, 142, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #0e7a6a 0%, #2dbf5f 100%);
+    box-shadow: 0 6px 20px rgba(14, 122, 106, 0.5);
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Warning Button */
+.btn-warning {
+    background: linear-gradient(135deg, #ffb347 0%, #ffcc33 100%);
+    border: none;
+    color: #333;
+    box-shadow: 0 4px 15px rgba(255, 179, 71, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #e6a233 0%, #e6b800 100%);
+    box-shadow: 0 6px 20px rgba(230, 162, 51, 0.5);
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Badge */
+.badge {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Header Section */
+.header-section {
+    background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+    box-shadow: 0 8px 30px rgba(78, 84, 200, 0.4);
+    border-radius: 0 0 30px 30px;
+}
+
+/* Search Input */
+.input-group-text {
+    background: #f0f4ff;
+    border: none;
+    color: #4e54c8;
+}
+
+.form-control {
+    background: #f0f4ff;
+    border: none;
+    box-shadow: none;
+    color: #333;
+}
+
+.form-control::placeholder {
+    color: #a0a8ff;
+}
+
+/* Animate.css Customization */
+.animate__animated {
+    --animate-duration: 0.8s;
+}
+
+/* Add subtle bounce on button hover */
+.btn-primary:hover, .btn-success:hover, .btn-warning:hover {
+    animation: bounce 0.6s;
+}
+
+@@keyframes bounce {
+    0%, 100% {
+        transform: translateY(-3px) scale(1.05);
+    }
+    50% {
+        transform: translateY(0) scale(1);
+    }
+}
+
+    }
+</style>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />

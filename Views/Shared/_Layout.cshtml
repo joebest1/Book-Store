@@ -1,0 +1,285 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Book Heaven</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #3a86ff;
+            --primary-dark: #2a5eb8;
+            --secondary: #ff9e01;
+            --secondary-dark: #e58e00;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --success: #38b000;
+            --danger: #ff6b6b;
+            --card-bg: #ffffff;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f7ff;
+            color: var(--text-dark);
+            padding-top: 0;
+        }
+
+        .brand-font {
+            font-family: 'Merriweather', serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 1rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            user-select: none;
+        }
+
+            .navbar-brand i {
+                margin-right: 10px;
+                font-size: 2rem;
+            }
+
+        .nav-cart-btn,
+        .nav-add-btn,
+        .nav-logout-btn {
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+            border: 2px solid transparent;
+            white-space: nowrap;
+        }
+
+        .nav-cart-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+            color: white;
+            position: relative;
+        }
+
+            .nav-cart-btn:hover,
+            .nav-cart-btn:focus {
+                background: white;
+                color: var(--primary);
+                text-decoration: none;
+                outline: none;
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px rgba(58, 134, 255, 0.4);
+            }
+
+        .nav-add-btn {
+            background: var(--secondary);
+            border: none;
+            color: white;
+        }
+
+            .nav-add-btn:hover,
+            .nav-add-btn:focus {
+                background: var(--secondary-dark);
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px rgba(255, 158, 1, 0.5);
+                outline: none;
+                text-decoration: none;
+            }
+
+        .nav-logout-btn {
+            background: var(--danger);
+            border: none;
+            color: white;
+        }
+
+            .nav-logout-btn:hover,
+            .nav-logout-btn:focus {
+                background: #e04e4e;
+                transform: translateY(-3px);
+                box-shadow: 0 6px 15px rgba(255, 107, 107, 0.6);
+                outline: none;
+                text-decoration: none;
+            }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-brand {
+            font-family: 'Merriweather', serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            user-select: none;
+        }
+
+        /* Accessibility focus outline */
+        a:focus-visible {
+            outline: 3px solid var(--secondary);
+            outline-offset: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" aria-label="Primary navigation">
+        <div class="container">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-book-open" aria-hidden="true"></i>
+                <span class="brand-font">Book Heaven</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                    aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 flex-row align-items-center gap-3">
+                    <!-- Cart Button -->
+                    <li class="nav-item">
+                        <a class="nav-cart-btn position-relative btn" asp-controller="Cart" asp-action="Index" aria-label="View Cart">
+                            <i class="fas fa-shopping-cart"></i> Cart
+                            @await Component.InvokeAsync("CartCount")
+                        </a>
+                    </li>
+
+
+ <!-- Add Book button for Admin -->
+        @if (HttpContextAccessor.HttpContext?.Session != null &&
+            string.Equals(HttpContextAccessor.HttpContext.Session.GetString("UserRole"), "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+         <li class="nav-item">
+    <a asp-action="Register" asp-controller="Account" 
+       class="nav-cart-btn position-relative btn btn-success" aria-label="Register">
+        <i class="fas fa-user-plus me-2"></i> Register
+    </a>
+</li>
+
+
+
+
+
+        }
+        else
+        {
+            <div></div> <!-- Empty div for spacing -->
+        }
+
+
+                        <!-- Logout Button -->
+                        <li class="nav-item">
+                            <form method="post" asp-controller="Account" asp-action="Logout" class="d-inline">
+                                <button type="submit" class="nav-logout-btn" aria-label="Logout">
+                                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-container">
+        <main role="main" class="pb-3">
+            <!-- Sample content to demonstrate layout -->
+            <div class="row mt-5">
+                <div class="col-12 text-center">
+                    <h1 class="display-4 brand-font text-dark">Welcome to Book Heaven</h1>
+                    <p class="lead text-muted">Your literary paradise awaits</p>
+                    <div class="mt-5 p-4 rounded-3" style="background: rgba(255, 255, 255, 0.8);">
+                        <p class="mb-0">@RenderBody() would be rendered here</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="footer-brand">Book Heaven</span>
+                    <p>Your literary paradise for discovering and enjoying books of all genres.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2025 - BookStore</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap & jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Simple animation for navigation items
+        $(document).ready(function () {
+            $('.nav-cart-btn, .nav-add-btn, .nav-logout-btn').hover(
+                function () {
+                    $(this).css('transform', 'translateY(-3px)');
+                },
+                function () {
+                    $(this).css('transform', 'translateY(0)');
+                }
+            );
+
+            // Pulse animation for cart badge
+            function pulseCartBadge() {
+                $('.cart-badge').animate({
+                    'box-shadow': '0 0 0 8px rgba(255, 107, 107, 0.5)'
+                }, 1000).animate({
+                    'box-shadow': '0 0 0 0 rgba(255, 107, 107, 0)'
+                }, 1000, pulseCartBadge);
+            }
+
+            pulseCartBadge();
+        });
+    </script>
+</body>
+</html>

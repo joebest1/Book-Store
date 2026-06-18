@@ -1,0 +1,225 @@
+﻿@model BookStore.Models.CartResponse
+
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+<!-- Page Header -->
+<div class="page-header text-center mb-4">
+    <h2 class="brand-font">My Cart</h2>
+    <p class="text-muted">Review your book selections</p>
+</div>
+
+<div class="cart-container">
+    @if (Model.Items != null && Model.Items.Any())
+    {
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Book</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr class="cart-item">
+                        <td data-label="Book">
+                            <div class="book-title">@item.Book?.Title </div>
+                        </td>
+                        <td data-label="Price" class="price">
+                            $@((item.Book?.Price ?? item.Price).ToString("F2"))
+                        </td>
+                        <td data-label="Quantity">@item.Quantity</td>
+                        <td data-label="Subtotal" class="subtotal">
+                            $@(((item.Book?.Price ?? item.Price) * item.Quantity).ToString("F2"))
+                        </td>
+                        <td data-label="Action">
+                            <form asp-action="DeleteFromCart" method="post">
+                                <input type="hidden" name="bookId" value="@item.BookId" />
+                                <button type="submit" class="btn-remove">
+                                    <i class="fas fa-trash me-1"></i> Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-end"><strong>Total</strong></td>
+                    <td colspan="2" class="subtotal">
+                        <strong>$@Model.TotalPrice.ToString("F2")</strong>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    }
+    else
+    {
+        <div class="empty-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <h4>Your cart is empty</h4>
+            <p>Looks like you haven't added any books to your cart yet.</p>
+            <a asp-controller="Books" asp-action="Index" class="continue-shopping">
+                <i class="fas fa-book me-2"></i> Continue Shopping
+            </a>
+        </div>
+    }
+</div>
+
+@@model BookStore.Models.CartResponse
+
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+
+<style>
+    :root {
+        --primary: #003366; /* Dark Blue */
+        --primary-light: #0055cc;
+        --secondary: #ff9e01;
+        --danger: #ff4d4d;
+        --light: #f8f9fa;
+    }
+
+
+     /* Animations */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+   @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: #f4f6fb;
+    }
+
+    .page-header h2 {
+        color: var(--primary);
+        font-weight: 700;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .cart-container {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        animation: fadeIn 1s ease-in;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .cart-table thead th {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .cart-table tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .cart-table tbody tr:hover {
+                transform: scale(1.01);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+
+    .book-title {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .price {
+        color: var(--primary-light);
+        font-weight: 600;
+    }
+
+    .subtotal {
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .btn-remove {
+        background: var(--danger);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-remove:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255,0,0,0.3);
+        }
+
+    .empty-cart {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+        .empty-cart i {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+
+    .continue-shopping {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        color: white;
+        border-radius: 50px;
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+        .continue-shopping:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+</style>

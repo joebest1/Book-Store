@@ -6,11 +6,11 @@ public class CloudFlareViewModel
     public bool Success { get; set; }
 
     [JsonPropertyName("challenge_ts")]
-    public string ChallengeTs { get; set; }
+    public string? ChallengeTs { get; set; }
 
     [JsonPropertyName("hostname")]
-    public string Hostname { get; set; }
+    public string? Hostname { get; set; }
 
     [JsonPropertyName("error-codes")]
-    public List<string> ErrorCodes { get; set; }
+    public List<string> ErrorCodes { get; set; } = new List<string>();
 }

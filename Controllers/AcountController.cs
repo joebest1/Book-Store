@@ -3,13 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 
 public class AccountController : Controller
 {
-    private readonly AuthService    _authService;
+    private readonly AuthService _authService;
     private readonly string _captchaSecret;
 
     public AccountController(AuthService authService, IConfiguration config)
     {
         _authService = authService;
-        _captchaSecret = config["Captcha:SecretKey"] ?? throw new InvalidOperationException("Captcha secret key not configured.");  // جاب الـ Secret Key من appsettings.json
+
+        _captchaSecret = config["Captcha:SecretKey"]
+            ?? throw new InvalidOperationException(
+                "Captcha Secret Key is missing from appsettings.json");
     }
 
     // ----------------------------
@@ -25,10 +28,12 @@ public class AccountController : Controller
             return View(model);
 
         var role = await _authService.LoginAsync(model);
-        if (!string.IsNullOrEmpty(role))
+
+        if (!string.IsNullOrWhiteSpace(role))
         {
             HttpContext.Session.SetString("UserRole", role);
             HttpContext.Session.SetString("UserEmail", model.Email);
+
             return RedirectToAction("Index", "Books");
         }
 
@@ -45,18 +50,19 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
-        var token = Request.Form["cf-turnstile-response"];
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid)
+            return View(model);
 
-        // 1) هات التوكين من الفورم
-        if (string.IsNullOrEmpty(token))
+        var token = Request.Form["cf-turnstile-response"].ToString();
+
+        if (string.IsNullOrWhiteSpace(token))
         {
-            ModelState.AddModelError("", "❌ Verification failed: no token received.");
+            ModelState.AddModelError("", "Verification failed: no token received.");
             return View(model);
         }
 
-        // 2) تحقق من التوكين باستخدام Secret Key
         using var httpClient = new HttpClient();
+
         var values = new Dictionary<string, string>
         {
             { "secret", _captchaSecret },
@@ -68,18 +74,24 @@ public class AccountController : Controller
             new FormUrlEncodedContent(values));
 
         var jsonString = await response.Content.ReadAsStringAsync();
-        var result = System.Text.Json.JsonSerializer.Deserialize<CloudFlareViewModel>(jsonString);
+
+        var result = System.Text.Json.JsonSerializer.Deserialize<CloudFlareViewModel>(
+            jsonString,
+            new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
 
         if (result == null || !result.Success)
         {
-            ModelState.AddModelError("", "❌ Bot verification failed.");
+            ModelState.AddModelError("", "Bot verification failed.");
             return View(model);
         }
 
-        // 3) لو التوكين صحيح → كمل التسجيل
         bool success = await _authService.RegisterAsync(model);
+
         if (success)
-            return RedirectToAction("Login");
+            return RedirectToAction(nameof(Login));
 
         ModelState.AddModelError("", "Registration failed");
         return View(model);
@@ -88,59 +100,73 @@ public class AccountController : Controller
     // ----------------------------
     // Logout
     // ----------------------------
+    [HttpGet]
     public async Task<IActionResult> Logout()
     {
         await _authService.LogoutAsync();
+
         HttpContext.Session.Clear();
-        return RedirectToAction("Login");
+
+        return RedirectToAction(nameof(Login));
     }
 
-    // -----------------------
+    // ----------------------------
     // Forgot Password
-    // -----------------------
+    // ----------------------------
     [HttpGet]
     public IActionResult ForgotPassword() => View();
 
     [HttpPost]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid)
+            return View(model);
 
         var success = await _authService.ForgotPasswordAsync(model);
 
         if (!success)
         {
-            ModelState.AddModelError("", "❌ User not found or failed to send reset link.");
+            ModelState.AddModelError(
+                "",
+                "User not found or failed to send reset link.");
+
             return View(model);
         }
 
-        ViewBag.Message = "✅ Check your email for reset link.";
+        ViewBag.Message = "Check your email for reset link.";
         return View();
     }
 
-    // -----------------------
+    // ----------------------------
     // Reset Password
-    // -----------------------
+    // ----------------------------
     [HttpGet]
     public IActionResult ResetPassword(string email, string token)
     {
-        return View(new ResetPasswordModel { Email = email, Token = token });
+        return View(new ResetPasswordModel
+        {
+            Email = email,
+            Token = token
+        });
     }
 
     [HttpPost]
     public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid)
+            return View(model);
 
         var success = await _authService.ResetPasswordAsync(model);
 
         if (!success)
         {
-            ModelState.AddModelError("", "❌ Failed to reset password.");
+            ModelState.AddModelError("", "Failed to reset password.");
             return View(model);
         }
 
-        TempData["Message"] = "✅ Password reset successfully. Please login.";
-        return RedirectToAction("Login");
+        TempData["Message"] =
+            "Password reset successfully. Please login.";
+
+        return RedirectToAction(nameof(Login));
     }
 }

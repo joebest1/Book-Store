@@ -178,36 +178,27 @@
 
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 flex-row align-items-center gap-3">
-                    <!-- Cart Button -->
-                    <li class="nav-item">
-                        <a class="nav-cart-btn position-relative btn" asp-controller="Cart" asp-action="Index" aria-label="View Cart">
-                            <i class="fas fa-shopping-cart"></i> Cart
-                            @await Component.InvokeAsync("CartCount")
-                        </a>
-                    </li>
+                    @if (HttpContextAccessor.HttpContext?.Session != null &&
+                        !string.IsNullOrEmpty(HttpContextAccessor.HttpContext.Session.GetString("UserRole")))
+                    {
+                        <!-- Cart Button -->
+                        <li class="nav-item">
+                            <a class="nav-cart-btn position-relative btn" asp-controller="Cart" asp-action="Index" aria-label="View Cart">
+                                <i class="fas fa-shopping-cart"></i> Cart
+                                @await Component.InvokeAsync("CartCount")
+                            </a>
+                        </li>
 
-
- <!-- Add Book button for Admin -->
-        @if (HttpContextAccessor.HttpContext?.Session != null &&
-            string.Equals(HttpContextAccessor.HttpContext.Session.GetString("UserRole"), "Admin", StringComparison.OrdinalIgnoreCase))
-        {
-         <li class="nav-item">
-    <a asp-action="Register" asp-controller="Account" 
-       class="nav-cart-btn position-relative btn btn-success" aria-label="Register">
-        <i class="fas fa-user-plus me-2"></i> Register
-    </a>
-</li>
-
-
-
-
-
-        }
-        else
-        {
-            <div></div> <!-- Empty div for spacing -->
-        }
-
+                        <!-- Add Book button for Admin -->
+                        @if (string.Equals(HttpContextAccessor.HttpContext.Session.GetString("UserRole"), "Admin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <li class="nav-item">
+                                <a asp-action="Register" asp-controller="Account"
+                                   class="nav-cart-btn position-relative btn btn-success" aria-label="Register">
+                                    <i class="fas fa-user-plus me-2"></i> Register
+                                </a>
+                            </li>
+                        }
 
                         <!-- Logout Button -->
                         <li class="nav-item">
@@ -218,6 +209,22 @@
                             </form>
                         </li>
                     }
+                    else
+                    {
+                        <!-- Login Button -->
+                        <li class="nav-item">
+                            <a class="nav-cart-btn position-relative btn" asp-controller="Account" asp-action="Login" aria-label="Login">
+                                <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Login
+                            </a>
+                        </li>
+
+                        <!-- Sign Up Button -->
+                        <li class="nav-item">
+                            <a class="nav-add-btn position-relative btn" asp-controller="Account" asp-action="Register" aria-label="Sign Up">
+                                <i class="fas fa-user-plus" aria-hidden="true"></i> Sign Up
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -225,16 +232,7 @@
 
     <div class="container main-container">
         <main role="main" class="pb-3">
-            <!-- Sample content to demonstrate layout -->
-            <div class="row mt-5">
-                <div class="col-12 text-center">
-                    <h1 class="display-4 brand-font text-dark">Welcome to Book Heaven</h1>
-                    <p class="lead text-muted">Your literary paradise awaits</p>
-                    <div class="mt-5 p-4 rounded-3" style="background: rgba(255, 255, 255, 0.8);">
-                        <p class="mb-0">@RenderBody() would be rendered here</p>
-                    </div>
-                </div>
-            </div>
+            @RenderBody()
         </main>
     </div>
 
